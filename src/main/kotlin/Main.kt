@@ -4,7 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -52,10 +54,7 @@ fun DetailPanel(
     onUpdateNotes: (PasswordEntry, String) -> Unit = { _, _ -> },
     categories: Set<String> = setOf("Общие", "Работа", "Личное", "Финансы", "Социальные сети")
 ) {
-    var showPassword by remember { mutableStateOf(false) }
-    var showCategoryDropdown by remember { mutableStateOf(false) }
-    var editingNotes by remember { mutableStateOf(false) }
-    var notesText by remember { mutableStateOf(entry.notes) }
+    val scrollState = rememberScrollState()
     
     Surface(
         modifier = Modifier
@@ -112,372 +111,408 @@ fun DetailPanel(
             )
             
             // Информация о сервисе
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(scrollState)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Language,
-                    contentDescription = "Service",
-                    tint = ProtonPurple,
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column {
-                    Text(
-                        text = "Service",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
-                    Text(
-                        text = entry.service,
-                        fontSize = 16.sp,
-                        color = ProtonTextPrimary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Информация о пользователе
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Username",
-                    tint = ProtonPurple,
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column(
-                    modifier = Modifier.weight(1f)
+                // Сервис
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = "Username",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
-                    Text(
-                        text = entry.username,
-                        fontSize = 16.sp,
-                        color = ProtonTextPrimary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                
-                // Кнопка копирования имени пользователя
-                IconButton(
-                    onClick = {
-                        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                        clipboard.setContents(StringSelection(entry.username), null)
-                    },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy Username",
-                        tint = ProtonTextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Информация о пароле
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Password",
-                    tint = ProtonPurple,
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Password",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
                         Text(
-                            text = if (showPassword) CryptoUtils.decrypt(entry.password) else "••••••••••••",
-                            fontSize = 16.sp,
-                            color = ProtonTextPrimary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f)
+                            text = "Service",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary
                         )
                         
-                        // Кнопка показать/скрыть пароль
-                        IconButton(
-                            onClick = { showPassword = !showPassword },
-                            modifier = Modifier.size(36.dp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = entry.service,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = ProtonTextPrimary
+                        )
+                    }
+                }
+                
+                // Имя пользователя
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Username",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (showPassword) "Hide Password" else "Show Password",
-                                tint = ProtonTextSecondary,
-                                modifier = Modifier.size(20.dp)
+                            Text(
+                                text = entry.username,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ProtonTextPrimary,
+                                modifier = Modifier.weight(1f)
                             )
+                            
+                            IconButton(
+                                onClick = {
+                                    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                                    clipboard.setContents(StringSelection(entry.username), null)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy Username",
+                                    tint = ProtonPurple,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
                 
-                // Кнопка копирования пароля
-                IconButton(
-                    onClick = { onCopyPassword(entry.password) },
-                    modifier = Modifier.size(36.dp)
+                // Пароль
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy Password",
-                        tint = ProtonTextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Информация о категории
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Folder,
-                    contentDescription = "Category",
-                    tint = ProtonPurple,
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Category",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
-                    Box {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Password",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        var showPassword by remember { mutableStateOf(false) }
+                        
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { showCategoryDropdown = true }
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = entry.category,
+                                text = if (showPassword) CryptoUtils.decrypt(entry.password) else "••••••••••••",
                                 fontSize = 16.sp,
-                                color = ProtonTextPrimary,
                                 fontWeight = FontWeight.Medium,
+                                color = ProtonTextPrimary,
                                 modifier = Modifier.weight(1f)
                             )
                             
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Change Category",
-                                tint = ProtonTextSecondary,
-                                modifier = Modifier.size(20.dp)
+                            IconButton(
+                                onClick = { showPassword = !showPassword }
+                            ) {
+                                Icon(
+                                    imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (showPassword) "Hide Password" else "Show Password",
+                                    tint = ProtonPurple,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            
+                            IconButton(
+                                onClick = { onCopyPassword(entry.password) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy Password",
+                                    tint = ProtonPurple,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Категория
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Category",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        var showCategoryDropdown by remember { mutableStateOf(false) }
+                        var currentCategory by remember { mutableStateOf(entry.category) }
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = currentCategory,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ProtonTextPrimary,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { showCategoryDropdown = true }
                             )
+                            
+                            IconButton(
+                                onClick = { showCategoryDropdown = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Category",
+                                    tint = ProtonPurple,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                         
                         DropdownMenu(
                             expanded = showCategoryDropdown,
                             onDismissRequest = { showCategoryDropdown = false },
-                            modifier = Modifier
-                                .background(ProtonCardBackground)
-                                .width(200.dp)
+                            modifier = Modifier.background(ProtonCardBackground)
                         ) {
-                            categories.forEach { cat ->
+                            categories.forEach { category ->
                                 DropdownMenuItem(
                                     onClick = {
-                                        onUpdateCategory(entry, cat)
+                                        currentCategory = category
+                                        onUpdateCategory(entry, category)
                                         showCategoryDropdown = false
                                     }
                                 ) {
-                                    Text(cat, color = ProtonTextPrimary)
+                                    Text(category, color = ProtonTextPrimary)
                                 }
                             }
                         }
                     }
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Дата создания
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DateRange,
-                    contentDescription = "Created",
-                    tint = ProtonPurple,
-                    modifier = Modifier.size(24.dp)
-                )
                 
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column {
-                    Text(
-                        text = "Created",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
-                    Text(
-                        text = LocalDateTime.ofEpochSecond(entry.createdAt / 1000, 0, java.time.ZoneOffset.UTC)
-                            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
-                        fontSize = 16.sp,
-                        color = ProtonTextPrimary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Заметки
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Заметки
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Note,
-                            contentDescription = "Notes",
-                            tint = ProtonPurple,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Notes",
+                                fontSize = 12.sp,
+                                color = ProtonTextSecondary
+                            )
+                            
+                            var isEditing by remember { mutableStateOf(false) }
+                            var editedNotes by remember { mutableStateOf(entry.notes) }
+                            
+                            if (isEditing) {
+                                Row {
+                                    IconButton(
+                                        onClick = {
+                                            onUpdateNotes(entry, editedNotes)
+                                            isEditing = false
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Save Notes",
+                                            tint = ProtonPurple,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    
+                                    IconButton(
+                                        onClick = {
+                                            editedNotes = entry.notes
+                                            isEditing = false
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Cancel",
+                                            tint = ProtonTextSecondary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            } else {
+                                IconButton(
+                                    onClick = { isEditing = true }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Notes",
+                                        tint = ProtonPurple,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
                         
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         
+                        var isEditing by remember { mutableStateOf(false) }
+                        var editedNotes by remember { mutableStateOf(entry.notes) }
+                        
+                        if (isEditing) {
+                            TextField(
+                                value = editedNotes,
+                                onValueChange = { editedNotes = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    backgroundColor = Color.Transparent,
+                                    cursorColor = ProtonPurple,
+                                    focusedIndicatorColor = ProtonPurple,
+                                    unfocusedIndicatorColor = ProtonBorder,
+                                    textColor = ProtonTextPrimary
+                                )
+                            )
+                        } else {
+                            Text(
+                                text = entry.notes.ifEmpty { "No notes" },
+                                fontSize = 16.sp,
+                                color = if (entry.notes.isEmpty()) ProtonTextSecondary else ProtonTextPrimary,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { isEditing = true }
+                            )
+                        }
+                    }
+                }
+                
+                // Дата создания
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = ProtonCardBackground,
+                    border = BorderStroke(1.dp, ProtonBorder),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
                         Text(
-                            text = "Notes",
+                            text = "Created",
                             fontSize = 12.sp,
                             color = ProtonTextSecondary
                         )
-                    }
-                    
-                    IconButton(
-                        onClick = { editingNotes = !editingNotes },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (editingNotes) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = if (editingNotes) "Save Notes" else "Edit Notes",
-                            tint = ProtonTextSecondary,
-                            modifier = Modifier.size(20.dp)
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = LocalDateTime.ofEpochSecond(
+                                entry.createdAt / 1000,
+                                0,
+                                java.time.ZoneOffset.UTC
+                            ).format(DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm")),
+                            fontSize = 16.sp,
+                            color = ProtonTextPrimary
                         )
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                if (editingNotes) {
-                    OutlinedTextField(
-                        value = notesText,
-                        onValueChange = { notesText = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            backgroundColor = ProtonCardBackground,
-                            textColor = ProtonTextPrimary,
-                            cursorColor = ProtonPurple,
-                            focusedBorderColor = ProtonPurple,
-                            unfocusedBorderColor = ProtonBorder
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { 
-                                notesText = entry.notes
-                                editingNotes = false 
-                            }
-                        ) {
-                            Text("Cancel", color = ProtonTextSecondary)
-                        }
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Button(
-                            onClick = { 
-                                onUpdateNotes(entry, notesText)
-                                editingNotes = false 
-                            },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = ProtonPurple)
-                        ) {
-                            Text("Save", color = Color.White)
-                        }
-                    }
-                } else {
-                    Text(
-                        text = if (entry.notes.isBlank()) "No notes" else entry.notes,
-                        fontSize = 14.sp,
-                        color = if (entry.notes.isBlank()) ProtonTextSecondary else ProtonTextPrimary,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = ProtonCardBackground,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(12.dp)
-                    )
-                }
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            // Кнопка удаления
-            Button(
-                onClick = { onDelete(entry) },
-                colors = ButtonDefaults.buttonColors(backgroundColor = ProtonRed),
-                modifier = Modifier.fillMaxWidth()
+            // Кнопки действий
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Delete Entry", color = Color.White)
+                // Кнопка удаления
+                OutlinedButton(
+                    onClick = { onDelete(entry) },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = Color.Transparent,
+                        contentColor = ProtonRed
+                    ),
+                    border = BorderStroke(1.dp, ProtonRed)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = ProtonRed,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Delete")
+                }
+                
+                // Кнопка избранного
+                OutlinedButton(
+                    onClick = { onToggleFavorite(entry) },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = Color.Transparent,
+                        contentColor = if (entry.isFavorite) Color.Yellow else ProtonTextSecondary
+                    ),
+                    border = BorderStroke(1.dp, if (entry.isFavorite) Color.Yellow else ProtonBorder)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = if (entry.isFavorite) "Remove from Favorites" else "Add to Favorites",
+                        tint = if (entry.isFavorite) Color.Yellow else ProtonTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (entry.isFavorite) "Unfavorite" else "Favorite")
+                }
             }
         }
     }
@@ -504,6 +539,7 @@ fun AddEntryDialog(
     }
     
     val isFormValid = service.isNotBlank() && username.isNotBlank() && password.isNotBlank()
+    val scrollState = rememberScrollState()
     
     Dialog(
         onDismissRequest = onDismiss
@@ -585,163 +621,27 @@ fun AddEntryDialog(
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Поле сервиса
-                    OutlinedTextField(
-                        value = service,
-                        onValueChange = { service = it },
-                        label = { Text("Service") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Language,
-                                contentDescription = "Service",
-                                tint = ProtonPurple
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = ProtonPurple,
-                            unfocusedBorderColor = ProtonBorder,
-                            focusedLabelColor = ProtonPurple,
-                            cursorColor = ProtonPurple,
-                            textColor = ProtonTextPrimary
-                        )
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Поле имени пользователя
-                    OutlinedTextField(
-                        value = username,
-                        onValueChange = { username = it },
-                        label = { Text("Username") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Username",
-                                tint = ProtonPurple
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = ProtonPurple,
-                            unfocusedBorderColor = ProtonBorder,
-                            focusedLabelColor = ProtonPurple,
-                            cursorColor = ProtonPurple,
-                            textColor = ProtonTextPrimary
-                        )
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Поле пароля
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Password",
-                                tint = ProtonPurple
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    password = PasswordGenerator.generate()
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Generate Password",
-                                    tint = ProtonPurple
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = ProtonPurple,
-                            unfocusedBorderColor = ProtonBorder,
-                            focusedLabelColor = ProtonPurple,
-                            cursorColor = ProtonPurple,
-                            textColor = ProtonTextPrimary
-                        )
-                    )
-                    
-                    // Индикатор силы пароля
-                    if (password.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .background(
-                                        color = ProtonCardBackground,
-                                        shape = RoundedCornerShape(2.dp)
-                                    )
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .width((passwordStrength * 0.01f * 100).dp)
-                                        .background(
-                                            color = passwordStrengthColor,
-                                            shape = RoundedCornerShape(2.dp)
-                                        )
-                                )
-                            }
-                            
-                            Spacer(modifier = Modifier.width(8.dp))
-                            
-                            Text(
-                                text = when {
-                                    passwordStrength < 40 -> "Weak"
-                                    passwordStrength < 70 -> "Medium"
-                                    else -> "Strong"
-                                },
-                                fontSize = 12.sp,
-                                color = passwordStrengthColor
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Поле категории
-                    Box {
+                    // Поля ввода с возможностью прокрутки
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(scrollState)
+                    ) {
+                        // Поле сервиса
                         OutlinedTextField(
-                            value = category,
-                            onValueChange = { },
-                            label = { Text("Category") },
+                            value = service,
+                            onValueChange = { service = it },
+                            label = { Text("Service") },
                             singleLine = true,
-                            readOnly = true,
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.Folder,
-                                    contentDescription = "Category",
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = "Service",
                                     tint = ProtonPurple
                                 )
                             },
-                            trailingIcon = {
-                                IconButton(onClick = { showCategoryDropdown = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowDropDown,
-                                        contentDescription = "Select Category",
-                                        tint = ProtonTextSecondary
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showCategoryDropdown = true },
+                            modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 focusedBorderColor = ProtonPurple,
                                 unfocusedBorderColor = ProtonBorder,
@@ -751,65 +651,207 @@ fun AddEntryDialog(
                             )
                         )
                         
-                        DropdownMenu(
-                            expanded = showCategoryDropdown,
-                            onDismissRequest = { showCategoryDropdown = false },
-                            modifier = Modifier
-                                .background(ProtonCardBackground)
-                                .width(200.dp)
-                        ) {
-                            categories.forEach { cat ->
-                                DropdownMenuItem(
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле имени пользователя
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            label = { Text("Username") },
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Username",
+                                    tint = ProtonPurple
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder,
+                                focusedLabelColor = ProtonPurple,
+                                cursorColor = ProtonPurple,
+                                textColor = ProtonTextPrimary
+                            )
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле пароля
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password") },
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Password",
+                                    tint = ProtonPurple
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(
                                     onClick = {
-                                        category = cat
-                                        showCategoryDropdown = false
+                                        password = PasswordGenerator.generate()
                                     }
                                 ) {
-                                    Text(cat, color = ProtonTextPrimary)
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Generate Password",
+                                        tint = ProtonPurple
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder,
+                                focusedLabelColor = ProtonPurple,
+                                cursorColor = ProtonPurple,
+                                textColor = ProtonTextPrimary
+                            )
+                        )
+                        
+                        // Индикатор силы пароля
+                        if (password.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(4.dp)
+                                        .background(
+                                            color = passwordStrengthColor.copy(alpha = 0.2f),
+                                            shape = RoundedCornerShape(2.dp)
+                                        )
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .width((passwordStrength * 0.01f * 100).dp)
+                                            .background(
+                                                color = passwordStrengthColor,
+                                                shape = RoundedCornerShape(2.dp)
+                                            )
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                Text(
+                                    text = when {
+                                        passwordStrength < 40 -> "Weak"
+                                        passwordStrength < 70 -> "Good"
+                                        else -> "Strong"
+                                    },
+                                    fontSize = 12.sp,
+                                    color = passwordStrengthColor
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле категории
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = category,
+                                onValueChange = { },
+                                label = { Text("Category") },
+                                singleLine = true,
+                                readOnly = true,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Folder,
+                                        contentDescription = "Category",
+                                        tint = ProtonPurple
+                                    )
+                                },
+                                trailingIcon = {
+                                    IconButton(onClick = { showCategoryDropdown = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowDropDown,
+                                            contentDescription = "Select Category",
+                                            tint = ProtonPurple
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showCategoryDropdown = true },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = ProtonPurple,
+                                    unfocusedBorderColor = ProtonBorder,
+                                    focusedLabelColor = ProtonPurple,
+                                    cursorColor = ProtonPurple,
+                                    textColor = ProtonTextPrimary
+                                )
+                            )
+                            
+                            DropdownMenu(
+                                expanded = showCategoryDropdown,
+                                onDismissRequest = { showCategoryDropdown = false },
+                                modifier = Modifier.background(ProtonCardBackground)
+                            ) {
+                                categories.forEach { cat ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            category = cat
+                                            showCategoryDropdown = false
+                                        }
+                                    ) {
+                                        Text(cat, color = ProtonTextPrimary)
+                                    }
                                 }
                             }
                         }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле заметок
+                        OutlinedTextField(
+                            value = notes,
+                            onValueChange = { notes = it },
+                            label = { Text("Notes (Optional)") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Note,
+                                    contentDescription = "Notes",
+                                    tint = ProtonPurple
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder,
+                                focusedLabelColor = ProtonPurple,
+                                cursorColor = ProtonPurple,
+                                textColor = ProtonTextPrimary
+                            )
+                        )
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Поле заметок
-                    OutlinedTextField(
-                        value = notes,
-                        onValueChange = { notes = it },
-                        label = { Text("Notes") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Note,
-                                contentDescription = "Notes",
-                                tint = ProtonPurple
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = ProtonPurple,
-                            unfocusedBorderColor = ProtonBorder,
-                            focusedLabelColor = ProtonPurple,
-                            cursorColor = ProtonPurple,
-                            textColor = ProtonTextPrimary
-                        )
-                    )
-                    
+                    // Подсказка о необходимости заполнения полей
                     if (!isFormValid) {
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Please fill in all required fields",
                             fontSize = 12.sp,
-                            color = Color.Red,
-                            modifier = Modifier.align(Alignment.End)
+                            color = ProtonTextSecondary,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
                     
-                    Spacer(modifier = Modifier.weight(1f))
-                    
-                    // Основная кнопка добавления
+                    // Кнопка добавления
                     Button(
                         onClick = {
                             if (isFormValid) {
@@ -832,7 +874,10 @@ fun AddEntryDialog(
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Add Entry", color = Color.White)
+                        Text(
+                            text = "Add Entry",
+                            color = Color.White
+                        )
                     }
                 }
             }

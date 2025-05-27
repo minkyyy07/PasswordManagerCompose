@@ -27,5 +27,28 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        nativeDistributions {
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe
+            )
+            packageName = "PasswordManager"
+            packageVersion = "1.0.0"
+        }
+    }
+}
+
+compose.desktop {
+    application {
+        // ...
+        nativeDistributions {
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg
+            )
+            macOS {
+                signing {
+                    sign.set(false)
+                }
+            }
+        }
     }
 }
