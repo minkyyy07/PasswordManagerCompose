@@ -29,7 +29,9 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Rpm,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi
             )
             packageName = "PasswordManager"
             packageVersion = "1.0.0"
