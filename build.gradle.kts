@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 plugins {
     kotlin("jvm") version "2.1.0"
     id("org.jetbrains.compose") version "1.7.3"
@@ -29,9 +31,8 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Rpm,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi
+                TargetFormat.Dmg, // macOS
+                TargetFormat.Exe
             )
             packageName = "PasswordManager"
             packageVersion = "1.0.0"
