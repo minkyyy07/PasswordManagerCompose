@@ -29,6 +29,13 @@ import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
+import utils.CryptoUtils
 
 // Define custom colors
 val ProtonPurple = Color(0xFF6D4AFF)
@@ -44,22 +51,12 @@ val ProtonGreen = Color(0xFF1EA885)
 val ProtonRed = Color(0xFFFF5252)
 
 // Улучшенная генерация пароля
-object PasswordGenerator {
-    fun generate(length: Int = 12, useDigits: Boolean = true, useUpper: Boolean = true, useSpecial: Boolean = true): String {
-        val lower = ('a'..'z').toList()
-        val upper = if (useUpper) ('A'..'Z').toList() else emptyList()
-        val digits = if (useDigits) ('0'..'9').toList() else emptyList()
-        val special = if (useSpecial) listOf('!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=') else emptyList()
-        val all = lower + upper + digits + special
-        if (all.isEmpty()) return ""
-        return (1..length).map { all.random() }.joinToString("")
-    }
-}
+// Перенесено в PasswordGenerator.kt
 
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Proton Pass",
+        title = "Password Manager",
         state = rememberWindowState(width = 1100.dp, height = 700.dp)
     ) {
         App()
@@ -219,7 +216,7 @@ fun Sidebar(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Proton Pass",
+                text = "Password Manager",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = ProtonTextPrimary
@@ -494,136 +491,143 @@ fun DetailPanel(
     var showPassword by remember { mutableStateOf(false) }
     
     Dialog(onCloseRequest = onClose) {
-        Surface(
-            modifier = Modifier
-                .width(400.dp)
-                .height(500.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = ProtonSurface
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
+            Surface(
+                modifier = Modifier
+                    .width(400.dp)
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(16.dp),
+                color = ProtonSurface
             ) {
-                // Header with service name and close button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
                 ) {
-                    Text(
-                        text = entry.service,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ProtonTextPrimary
-                    )
-                    
-                    IconButton(onClick = onClose) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = ProtonTextSecondary
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Username
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Username",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary
-                    )
-                    
+                    // Header with service name and close button
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = entry.username,
-                            fontSize = 16.sp,
+                            text = entry.service,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
                             color = ProtonTextPrimary
                         )
                         
-                        IconButton(
-                            onClick = {
-                                Toolkit.getDefaultToolkit().systemClipboard.setContents(
-                                    StringSelection(entry.username), null
-                                )
-                            }
-                        ) {
+                        IconButton(onClick = onClose) {
                             Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy Username",
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
                                 tint = ProtonTextSecondary
                             )
                         }
                     }
-                }
-                
-                Divider(color = ProtonBorder)
-                
-                // Password
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Password",
-                        fontSize = 12.sp,
-                        color = ProtonTextSecondary,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
                     
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // Username
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = if (showPassword) CryptoUtils.decrypt(entry.password) else "••••••••••••",
-                            fontSize = 16.sp,
-                            color = ProtonTextPrimary
+                            text = "Username",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary
                         )
                         
-                        Row {
-                            IconButton(
-                                onClick = { showPassword = !showPassword }
-                            ) {
-                                Icon(
-                                    imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (showPassword) "Hide Password" else "Show Password",
-                                    tint = ProtonTextSecondary
-                                )
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = entry.username,
+                                fontSize = 16.sp,
+                                color = ProtonTextPrimary
+                            )
                             
                             IconButton(
-                                onClick = { onCopyPassword(entry.password) }
+                                onClick = {
+                                    Toolkit.getDefaultToolkit().systemClipboard.setContents(
+                                        StringSelection(entry.username), null
+                                    )
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = "Copy Password",
+                                    contentDescription = "Copy Username",
                                     tint = ProtonTextSecondary
                                 )
                             }
                         }
                     }
-                }
-                
-                Divider(color = ProtonBorder)
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // Delete button
-                Button(
-                    onClick = { onDelete(entry) },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = ProtonRed),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Delete", color = Color.White)
+                    
+                    Divider(color = ProtonBorder)
+                    
+                    // Password
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Password",
+                            fontSize = 12.sp,
+                            color = ProtonTextSecondary,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                        
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (showPassword) CryptoUtils.decrypt(entry.password) else "••••••••••••",
+                                fontSize = 16.sp,
+                                color = ProtonTextPrimary
+                            )
+                            
+                            Row {
+                                IconButton(
+                                    onClick = { showPassword = !showPassword }
+                                ) {
+                                    Icon(
+                                        imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = if (showPassword) "Hide Password" else "Show Password",
+                                        tint = ProtonTextSecondary
+                                    )
+                                }
+                                
+                                IconButton(
+                                    onClick = { onCopyPassword(entry.password) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = "Copy Password",
+                                        tint = ProtonTextSecondary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    Divider(color = ProtonBorder)
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    // Delete button
+                    Button(
+                        onClick = { onDelete(entry) },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ProtonRed),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Delete", color = Color.White)
+                    }
                 }
             }
         }
@@ -635,137 +639,270 @@ fun AddEntryDialog(
     onDismiss: () -> Unit,
     onAdd: (String, String, String) -> Unit
 ) {
+    // Состояния для полей ввода
     var service by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     
+    // Состояние валидации
+    val isFormValid = service.isNotBlank() && username.isNotBlank() && password.isNotBlank()
+    
+    // Оценка силы пароля
+    val passwordStrength = if (password.isNotBlank()) {
+        PasswordGenerator.evaluatePasswordStrength(password)
+    } else 0
+    
+    // Цвет индикатора силы пароля
+    val strengthColor = when {
+        passwordStrength < 40 -> Color.Red
+        passwordStrength < 70 -> Color.Yellow
+        else -> Color.Green
+    }
+    
     Dialog(onCloseRequest = onDismiss) {
-        Surface(
-            modifier = Modifier
-                .width(400.dp)
-                .height(400.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = ProtonSurface
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
+            Surface(
+                modifier = Modifier
+                    .width(420.dp)
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(16.dp),
+                color = ProtonSurface
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp)  // Убираем отступы от края Surface
                 ) {
-                    Text(
-                        text = "Add New Login",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ProtonTextPrimary
-                    )
-                    
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = ProtonTextSecondary
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Service
-                OutlinedTextField(
-                    value = service,
-                    onValueChange = { service = it },
-                    label = { Text("Service", color = ProtonTextSecondary) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        backgroundColor = ProtonCardBackground,
-                        textColor = ProtonTextPrimary,
-                        cursorColor = ProtonPurple,
-                        focusedBorderColor = ProtonPurple,
-                        unfocusedBorderColor = ProtonBorder
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Username
-                OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Username", color = ProtonTextSecondary) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        backgroundColor = ProtonCardBackground,
-                        textColor = ProtonTextPrimary,
-                        cursorColor = ProtonPurple,
-                        focusedBorderColor = ProtonPurple,
-                        unfocusedBorderColor = ProtonBorder
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Password
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password", color = ProtonTextSecondary) },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
-                            Icon(
-                                imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (showPassword) "Hide Password" else "Show Password",
-                                tint = ProtonTextSecondary
+                    // Основная структура диалога
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp)
+                    ) {
+                        // Заголовок и кнопки
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Add New Login",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ProtonTextPrimary
                             )
+                            
+                            Row {
+                                // Кнопка добавления в углу
+                                Button(
+                                    onClick = {
+                                        if (isFormValid) {
+                                            onAdd(service, username, password)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = ProtonPurple,
+                                        disabledBackgroundColor = ProtonPurple.copy(alpha = 0.5f)
+                                    ),
+                                    modifier = Modifier.size(width = 60.dp, height = 30.dp),
+                                    enabled = isFormValid
+                                ) {
+                                    Text("Add", fontSize = 12.sp, color = Color.White)
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                IconButton(onClick = onDismiss) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Close",
+                                        tint = ProtonTextSecondary
+                                    )
+                                }
+                            }
                         }
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        backgroundColor = ProtonCardBackground,
-                        textColor = ProtonTextPrimary,
-                        cursorColor = ProtonPurple,
-                        focusedBorderColor = ProtonPurple,
-                        unfocusedBorderColor = ProtonBorder
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Generate password button
-                OutlinedButton(
-                    onClick = { password = PasswordGenerator.generate() },
-                    modifier = Modifier.align(Alignment.End),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = Color.Transparent,
-                        contentColor = ProtonPurple
-                    ),
-                    border = BorderStroke(1.dp, ProtonPurple)
-                ) {
-                    Text("Generate Password")
-                }
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // Add button
-                Button(
-                    onClick = { 
-                        if (service.isNotBlank() && username.isNotBlank() && password.isNotBlank()) {
-                            onAdd(service, username, password)
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        // Поле ввода для сервиса
+                        OutlinedTextField(
+                            value = service,
+                            onValueChange = { service = it },
+                            label = { Text("Service", color = ProtonTextSecondary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                backgroundColor = ProtonCardBackground,
+                                textColor = ProtonTextPrimary,
+                                cursorColor = ProtonPurple,
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = "Service",
+                                    tint = ProtonTextSecondary
+                                )
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле ввода для имени пользователя
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            label = { Text("Username", color = ProtonTextSecondary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                backgroundColor = ProtonCardBackground,
+                                textColor = ProtonTextPrimary,
+                                cursorColor = ProtonPurple,
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Username",
+                                    tint = ProtonTextSecondary
+                                )
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Поле ввода для пароля с возможностью показать/скрыть
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password", color = ProtonTextSecondary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { showPassword = !showPassword }) {
+                                    Icon(
+                                        imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = if (showPassword) "Hide Password" else "Show Password",
+                                        tint = ProtonTextSecondary
+                                    )
+                                }
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                backgroundColor = ProtonCardBackground,
+                                textColor = ProtonTextPrimary,
+                                cursorColor = ProtonPurple,
+                                focusedBorderColor = ProtonPurple,
+                                unfocusedBorderColor = ProtonBorder
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Password",
+                                    tint = ProtonTextSecondary
+                                )
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // Индикатор силы пароля
+                        if (password.isNotBlank()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(4.dp)
+                                        .background(Color.Gray.copy(alpha = 0.3f))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .fillMaxWidth(passwordStrength / 100f)
+                                            .background(strengthColor)
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                Text(
+                                    text = when {
+                                        passwordStrength < 40 -> "Weak"
+                                        passwordStrength < 70 -> "Medium"
+                                        else -> "Strong"
+                                    },
+                                    color = strengthColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = ProtonPurple),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = service.isNotBlank() && username.isNotBlank() && password.isNotBlank()
-                ) {
-                    Text("Add", color = Color.White)
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Кнопка генерации пароля
+                        OutlinedButton(
+                            onClick = { password = PasswordGenerator.generate() },
+                            modifier = Modifier.align(Alignment.End),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = Color.Transparent,
+                                contentColor = ProtonPurple
+                            ),
+                            border = BorderStroke(1.dp, ProtonPurple)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Generate",
+                                tint = ProtonPurple,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Generate Password")
+                        }
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        // Подсказка о заполнении полей
+                        if (!isFormValid) {
+                            Text(
+                                text = "Please fill in all fields to continue",
+                                color = ProtonTextSecondary,
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                    
+                    // Основная кнопка добавления внизу
+                    Button(
+                        onClick = {
+                            if (isFormValid) {
+                                onAdd(service, username, password)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ProtonPurple),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp)
+                            .align(Alignment.BottomCenter),
+                        enabled = isFormValid
+                    ) {
+                        Text("Add Entry", color = Color.White)
+                    }
                 }
             }
         }
