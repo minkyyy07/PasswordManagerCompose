@@ -1,23 +1,96 @@
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
+import storage.PasswordStorage
+import utils.CryptoUtils
 import kotlin.random.Random
 
 class PasswordManager {
     val entries = mutableStateListOf<PasswordEntry>()
+    private var isInitialized = false
 
-    fun addEntry(entry: PasswordEntry) {
-        entries.add(entry)
+    suspend fun initialize() {
+        if (isInitialized) return
+
+        val loadedEntries = PasswordStorage.loadEntries()
+        entries.clear()
+        entries.addAll(loadedEntries)
+        isInitialized = true
     }
 
-    fun removeEntry(entry: PasswordEntry) {
+    suspend fun addEntry(entry: PasswordEntry) {
+        entries.add(entry)
+        saveEntries()
+    }
+
+    suspend fun removeEntry(entry: PasswordEntry) {
         entries.remove(entry)
+        saveEntries()
+    }
+
+    suspend fun updateEntry(oldEntry: PasswordEntry, newEntry: PasswordEntry) {
+        val index = entries.indexOf(oldEntry)
+        if (index >= 0) {
+            entries[index] = newEntry
+            saveEntries()
+        }
+    }
+
+    suspend fun toggleFavorite(entry: PasswordEntry) {
+        val index = entries.indexOf(entry)
+        if (index >= 0) {
+            entries[index] = entry.copy(isFavorite = !entry.isFavorite)
+            saveEntries()
+        }
+    }
+
+    suspend fun updateCategory(entry: PasswordEntry, newCategory: String) {
+        val index = entries.indexOf(entry)
+        if (index >= 0) {
+            entries[index] = entry.copy(category = newCategory)
+            saveEntries()
+        }
+    }
+
+    suspend fun updateNotes(entry: PasswordEntry, notes: String) {
+        val index = entries.indexOf(entry)
+        if (index >= 0) {
+            entries[index] = entry.copy(notes = notes)
+            saveEntries()
+        }
+    }
+
+    suspend fun changeMasterPassword() {
+        val updatedEntries = CryptoUtils.changeMasterKey(
+            entries = entries.toList(),
+            passwordExtractor = { it.password },
+            entryUpdater = { entry, newPassword -> entry.copy(password = newPassword) }
+        )
+        entries.clear()
+        entries.addAll(updatedEntries)
+        saveEntries()
+    }
+
+    private suspend fun saveEntries() {
+        PasswordStorage.saveEntries(entries)
     }
 
     fun findEntries(query: String): List<PasswordEntry> =
         entries.filter {
-            it.service.contains(query, true) || it.username.contains(query, true)
+            it.service.contains(query, true) || 
+            it.username.contains(query, true) ||
+            it.category.contains(query, true) ||
+            it.notes.contains(query, true)
         }
+        
+    fun getFavorites(): List<PasswordEntry> =
+        entries.filter { it.isFavorite }
+        
+    fun getByCategory(category: String): List<PasswordEntry> =
+        entries.filter { it.category == category }
+        
+    fun getAllCategories(): Set<String> =
+        entries.map { it.category }.toSet()
 }
 
 object PasswordGenerator {

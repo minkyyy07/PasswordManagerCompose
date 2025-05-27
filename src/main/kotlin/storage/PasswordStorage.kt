@@ -10,12 +10,15 @@ import kotlinx.serialization.json.Json
 import utils.CryptoUtils
 import java.io.File
 
+@Serializable
 data class SerializablePasswordEntry(
     val service: String,
     val username: String,
     val encryptedPassword: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val category: String = "Общие",
+    val notes: String = ""
 )
 
 object PasswordStorage {
@@ -28,7 +31,11 @@ object PasswordStorage {
                 SerializablePasswordEntry(
                     service = it.service,
                     username = it.username,
-                    encryptedPassword = CryptoUtils.encrypt(it.password)
+                    encryptedPassword = it.password, 
+                    createdAt = it.createdAt,
+                    isFavorite = it.isFavorite,
+                    category = it.category,
+                    notes = it.notes
                 )
             }
 
@@ -50,7 +57,11 @@ object PasswordStorage {
                 PasswordEntry(
                     service = it.service,
                     username = it.username,
-                    password = CryptoUtils.decrypt(it.encryptedPassword)
+                    password = it.encryptedPassword, 
+                    createdAt = it.createdAt,
+                    isFavorite = it.isFavorite,
+                    category = it.category,
+                    notes = it.notes
                 )
             }
         } catch (e: Exception) {
