@@ -39,19 +39,3 @@ compose.desktop {
         }
     }
 }
-
-compose.desktop {
-    application {
-        // ...
-        nativeDistributions {
-            targetFormats(
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg
-            )
-            macOS {
-                signing {
-                    sign.set(false)
-                }
-            }
-        }
-    }
-}
